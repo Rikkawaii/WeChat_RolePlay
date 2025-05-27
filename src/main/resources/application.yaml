@@ -10,7 +10,7 @@ spring:
     password: xnylh
   ai:
     dashscope:
-      api-key: sk-a14aad4eeaf44d0982d716eb7ccacbce
+      api-key: {api-key}
       chat:
         options:
           model: qwen-turbo
