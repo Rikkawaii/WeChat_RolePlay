@@ -1,0 +1,2 @@
+# WeChat_RolePlay
+基于WechatPadPro+文本大模型+SOVITS的微信聊天兼角色扮演机器人
