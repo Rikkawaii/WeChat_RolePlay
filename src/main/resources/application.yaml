@@ -26,6 +26,3 @@ logging:
             client:
               advisor:
                 SimpleLoggerAdvisor: DEBUG
-
-
-
