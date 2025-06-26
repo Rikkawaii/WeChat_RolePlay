@@ -41,6 +41,8 @@ public class ChatWithLLM {
     private final ChatClient rolePlayChatClient; // 默认是佳代子Prompt
     private final ChatClient commonChatClient;
 
+    // 以下四个属性只在/chat这个api中使用过,用于测试新功能，可忽略
+
     private final VectorStore myVectorStoreLocal;
 
     private final DocumentRetriever myDocumentRetrieverCloud;
@@ -65,9 +67,11 @@ public class ChatWithLLM {
         this.allTools = allTools;
     }
 
-    @Value("classpath:/role_prompt/Yukino.md")
-    private Resource systemResource;
-
+    /**
+     * 测试新功能
+     * @param message
+     * @return
+     */
     @GetMapping("")
     public BaseResponse<String> chatWithLLM(@RequestParam("message") String message) {
         /**
@@ -107,49 +111,23 @@ public class ChatWithLLM {
 //                        .queryAugmenter(ContextualQueryAugmenter.builder().allowEmptyContext(true).build())
 //                        .build()
 //        ).call().content();
-/**
- *  模拟自主规划智能体
- */
-//        messageList.add(new UserMessage(message));
-//        Prompt prompt = new Prompt(messageList, chatOptions);
-//        ChatResponse chatResponse = commonChatClient.prompt(prompt)
-//                .tools(new ResourceDownloadTool())
-//                .call()
-//                .chatResponse();
-//        AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
-//        messageList.add(assistantMessage);
-//        String text = assistantMessage.getText();
-//        List<AssistantMessage.ToolCall> toolCalls = assistantMessage.getToolCalls();
-//        ToolCallingManager toolCallingManager = ToolCallingManager.builder().build();
-//        for (AssistantMessage.ToolCall toolCall : toolCalls) {
-//            System.out.println(toolCall.name());
-//            ToolExecutionResult toolExecutionResult = toolCallingManager.executeToolCalls(prompt, chatResponse);
-//            List<Message> conversationHistory = toolExecutionResult.conversationHistory();
-//            Message lastMessage = conversationHistory.get(conversationHistory.size()-1);
-//            messageList.add(lastMessage);
-//        }
-//
-//
-//        return ResultUtils.success(text);
-
-
         String text = commonChatClient.prompt().user(message).advisors(
                         advisor -> advisor
                                 .param("chat_memory_response_size", "10"))
                 .toolCallbacks(allTools)
-//                .toolCallbacks(toolCallbackProvider)
+                .toolCallbacks(toolCallbackProvider)
                 .call()
                 .content();
         return ResultUtils.success(text);
     }
 
     /**
-     * 供测试使用，调用大模型回复，合成音频，保存音频，自动播放音频
+     * 通过该请求输入消息，调用大模型回复，合成音频，保存音频，自动播放音频（快速体验，不需要使用py模块）
      *
      * @param message
      * @return
      */
-    @GetMapping("/test")
+    @GetMapping("/quick")
     public BaseResponse<String> ChatWithRoleForTest(@RequestParam("message") String message) {
         // 大模型回复
         String text = rolePlayChatClient.prompt().user(message).advisors().call().content();

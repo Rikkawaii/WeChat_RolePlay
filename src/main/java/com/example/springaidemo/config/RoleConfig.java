@@ -7,6 +7,10 @@ import org.springframework.context.annotation.PropertySource;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 保留
+ * 之后可以会用于“外置”的角色prompt以及角色模型读取
+ */
 @Configuration
 @ConfigurationProperties(prefix = "roles")
 @PropertySource("classpath:role-config.properties") // 无需自定义工厂类
