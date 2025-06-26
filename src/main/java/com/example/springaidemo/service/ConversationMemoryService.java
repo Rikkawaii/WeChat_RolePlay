@@ -11,6 +11,5 @@ import java.util.List;
 * @createDate 2025-05-13 21:39:57
 */
 public interface ConversationMemoryService extends IService<ConversationMemory> {
-
     List<ConversationMemory> getMessageByConversationId(String conversationId);
 }

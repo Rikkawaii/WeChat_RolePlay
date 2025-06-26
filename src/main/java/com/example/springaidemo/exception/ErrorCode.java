@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
     SUCCESS(0, "ok"),
+    BAD_REQUEST(40000, "Bad request"),
     SENSITIVE_DATA_ACCESS_DENIED(40001, "Sensitive data access denied"),
     SYSTEM_ERROR(50000, "System error");
 

@@ -10,11 +10,35 @@ spring:
     password: xnylh
   ai:
     dashscope:
-      api-key: {api-key}
+      api-key: {your-api-key}
       chat:
         options:
-          model: qwen-turbo
+          model: qwen-plus
+          enable-thinking: true
 
+    mcp:
+      client:
+        request-timeout: 60000
+        stdio:
+          root-change-notification: true
+          servers-configuration: classpath:mcp-servers.json
+
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+            # 配置初始化脚本的位置
+            schema: classpath:org/springframework/ai/chat/memory/repository/jdbc/schema-mariadb.sql
+            platform: mariadb
+
+    datasource:
+      url: jdbc:mysql://127.0.0.1:3306/role_agent?useUnicode=true&characterEncoding=utf8&autoReconnectForPools=true&useSSL=false&allowPublicKeyRetrieval=true
+      username: root
+      password: xnylh
+      driver-class-name: com.mysql.cj.jdbc.Driver
+    retry:
+      max-attempts: 3
 
 logging:
   level:
@@ -26,3 +50,6 @@ logging:
             client:
               advisor:
                 SimpleLoggerAdvisor: DEBUG
+
+search-api:
+  key: {your-search-api-key}

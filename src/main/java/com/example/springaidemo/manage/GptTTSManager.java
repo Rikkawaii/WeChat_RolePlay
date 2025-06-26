@@ -5,6 +5,7 @@ import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.JdbcUpdateAffectedIncorrectNumberOfRowsException;
 import org.springframework.stereotype.Component;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.EncoderException;
@@ -18,22 +19,51 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.example.springaidemo.rolestatus.RolePrompt.ARONA;
+import static com.example.springaidemo.rolestatus.RolePrompt.KAYOKO;
+
 // 文本转对应模型语音
 @Slf4j
 @Component
 public class GptTTSManager {
     private static final String baseUrl = "http://localhost:9880";
+    private static final String CHINESE = "zh";
+    private static final String JAPANESE = "ja";
 
-    public static byte[] generateAudio(String text) {
-        Map<String, Object> params = MapUtil.builder(new HashMap<String, Object>())
-                .put("text", text)
-                .put("text_lang", "ja")
-                .put("ref_audio_path", "D:/新建文件夹/ckyp.wav")
-                .put("prompt_lang", "ja")
-                .put("prompt_text", "先生の依頼なら、いつでも歓迎だよ")
-                .put("text_split_method", "cut1")//四句一切)
-                .put("batch_size", 1)
-                .build();
+    public static byte[] generateAudio(String text, String role) {
+        Map<String, Object> params;
+        if(role.equals(KAYOKO.getRole())) {
+            params = MapUtil.builder(new HashMap<String, Object>())
+                    .put("text_lang", JAPANESE)
+                    .put("ref_audio_path", "D:/新建文件夹/ckyp.wav")
+                    .put("prompt_lang", JAPANESE)
+                    .put("prompt_text", "先生の依頼なら、いつでも歓迎だよ")
+                    .put("text_split_method", "cut1")//四句一切)
+                    .put("batch_size", 1)
+                    .build();
+        }else if(role.equals(ARONA.getRole())) {
+            params = MapUtil.builder(new HashMap<String, Object>())
+                    .put("text", text)
+                    .put("text_lang", CHINESE)
+                    .put("ref_audio_path", "D:/AI语音模型参考音频/阿罗娜/参考音频2(中文)/arona_work_talk_5.wav")
+                    .put("prompt_lang", CHINESE)
+                    .put("prompt_text", "偶尔也要为自己的健康着想哦，老师！我会很担心的")
+                    .put("text_split_method", "cut1")//四句一切)
+                    .put("batch_size", 1)
+                    .build();
+        }else {
+            params = MapUtil.builder(new HashMap<String, Object>())
+                    .put("text", text)
+                    .put("text_lang", JAPANESE)
+                    .put("ref_audio_path","D:/AI语音模型参考音频/六花/新しい拠点に移ったらもうここには来られない_.wav")
+//                    .put("ref_audio_path","D:/AI语音模型参考音频/六花/魔界に動きがあってもユータの部屋に報告に行けないずっと一緒にいたくないのか.wav")
+                    .put("prompt_lang", JAPANESE)
+                    .put("prompt_text", "新しい拠点に移ったらもうここには来られない_")
+//                    .put("prompt_text", "魔界に動きがあってもユータの部屋に報告に行けないずっと一緒にいたくないのか")
+                    .put("text_split_method", "cut1")//四句一切)
+                    .put("batch_size", 2)
+                    .build();
+        }
 
         // 返回音频字节流需特殊处理
         byte[] audioData = HttpRequest.get(baseUrl + "/tts")
@@ -57,9 +87,9 @@ public class GptTTSManager {
     }
 
 
-    public static void switchGptModel() {
+    public static void switchGptModel(String modelPath) {
         HttpResponse httpResponse = HttpRequest.get(baseUrl + "/set_gpt_weights")
-                .form(MapUtil.of("weights_path", "GPT_weights/Yukino_Weak-e25.ckpt"))
+                .form(MapUtil.of("weights_path", modelPath))
                 .execute();
         if (httpResponse.isOk()) {
             log.info("GPT模型切换成功"); // 成功返回"success"
@@ -68,9 +98,9 @@ public class GptTTSManager {
         }
     }
 
-    public static void switchSOVITSModel() {
+    public static void switchSOVITSModel(String modelPath) {
         HttpResponse httpResponse = HttpRequest.get(baseUrl + "/set_sovits_weights")
-                .form(MapUtil.of("weights_path", "GPT_weights/Yukino_Weak-e25.ckpt"))
+                .form(MapUtil.of("weights_path", modelPath))
                 .execute();
         if (httpResponse.isOk()) {
             log.info("SOVITS模型切换成功"); // 成功返回"success"
@@ -119,6 +149,11 @@ public class GptTTSManager {
         return amrData;
     }
 
+    /**
+     * 输入wav格式的音频字节
+     * @param audioData
+     * @return
+     */
     public static byte[] transformToBytesSilk(byte[] audioData) {
         // 1. 先保存音频为wav格式
         String wavAudioPath = saveAudio(audioData);
